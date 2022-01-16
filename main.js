@@ -45,7 +45,7 @@ function init() {
     100
   );
 
-  camera.position.set(4, 4, 4);
+  camera.position.set(8, 8, 8);
   camera.lookAt(0, 0, 0);
 
   renderer = new THREE.WebGLRenderer({ antialias: true });
