@@ -253,8 +253,8 @@ function animation() {
     clickLogic(true);
   }
 
-  console.log(topLayer.threejs.position[direction].toFixed(1));
-  console.log(prevLayerPosRdm);
+  //console.log(topLayer.threejs.position[direction].toFixed(1));
+  //console.log(prevLayerPosRdm);
 }
 
 function updatePhysics() {
