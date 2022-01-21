@@ -11,7 +11,9 @@ let gameStarted = false;
 const boxHeight = 1; // Height of each layer
 let direction; //Something fishy
 let world; // CannonJs world
-let autoplay = true;
+let autoplayOn = true;
+let prevLayerPosRdm;
+const autoplayAccuracy = 8;
 
 function init() {
   // Init CannonJs
@@ -55,6 +57,13 @@ function init() {
 
   document.body.appendChild(renderer.domElement);
   renderer.setAnimationLoop(animation);
+
+  // For some css
+  document.querySelector(".menu").style.opacity = 1;
+  prevLayerPosRdm = (
+    (Math.random() * originalBoxSize) /
+    autoplayAccuracy
+  ).toFixed(1);
 }
 
 function reset() {
@@ -63,6 +72,14 @@ function reset() {
 
   stack = [];
   overhangs = [];
+  world;
+
+  world = new CANNON.World();
+  world.gravity.set(0, -10, 0);
+  world.broadphase = new CANNON.NaiveBroadphase();
+  world.solver.iterations = 40;
+
+  scene = new THREE.Scene();
   console.log(stack);
   scene = new THREE.Scene();
   const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -123,68 +140,71 @@ function generateBox(x, y, z, width, depth, falls) {
   };
 }
 
-function gameLogic() {}
-
 window.addEventListener("click", () => {
-  if (autoplay == true) {
+  if (autoplayOn == true || !gameStarted) {
     reset();
-    autoplay = false;
-  }
-  if (!gameStarted) {
+    autoplayOn = false;
     gameStarted = true;
+    // For some css
+    document.querySelector(".menu").classList.toggle("active");
+    document.querySelector(".menu").style.opacity = 0;
   } else {
-    const topLayer = stack[stack.length - 1];
-    const previousLayer = stack[stack.length - 2];
-
-    const direction = topLayer.direction;
-
-    const delta =
-      topLayer.threejs.position[direction] -
-      previousLayer.threejs.position[direction];
-
-    const overhangSize = Math.abs(delta);
-
-    const size = direction == "x" ? topLayer.width : topLayer.depth;
-
-    const overlap = size - overhangSize;
-
-    if (overlap > 0) {
-      //Cut layer
-
-      if (autoplay == false) {
-        cutBox(topLayer, overlap, size, delta);
-      }
-
-      // Overhang
-      const overhangShift = (overlap / 2 + overhangSize / 2) * Math.sign(delta);
-      const overhangX =
-        direction == "x"
-          ? topLayer.threejs.position.x + overhangShift
-          : topLayer.threejs.position.x;
-      const overhangZ =
-        direction == "z"
-          ? topLayer.threejs.position.z + overhangShift
-          : topLayer.threejs.position.z;
-      const overhangWidth = direction == "x" ? overhangSize : topLayer.width;
-      const overhangDepth = direction == "z" ? overhangSize : topLayer.depth;
-
-      if (autoplay == false) {
-        addOverhang(overhangX, overhangZ, overhangWidth, overhangDepth);
-      }
-
-      // Next layer
-      const nextX = direction == "x" ? topLayer.threejs.position.x : -10;
-      const nextZ = direction == "z" ? topLayer.threejs.position.z : -10;
-      const newWidth = topLayer.width; // New layer has the same size as the cut top layer
-      const newDepth = topLayer.depth; // New layer has the same size as the cut top layer
-      const nextDirection = direction == "x" ? "z" : "x";
-
-      if (autoplay == false) {
-        addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
-      }
-    }
+    clickLogic(false);
   }
 });
+
+function clickLogic(autoOn) {
+  const topLayer = stack[stack.length - 1];
+  const previousLayer = stack[stack.length - 2];
+
+  const direction = topLayer.direction;
+
+  const delta =
+    topLayer.threejs.position[direction] -
+    previousLayer.threejs.position[direction];
+
+  const overhangSize = Math.abs(delta);
+
+  const size = direction == "x" ? topLayer.width : topLayer.depth;
+
+  const overlap = size - overhangSize;
+  //console.log(topLayer.threejs.position[direction]);
+
+  if (overlap > 0) {
+    //Cut layer
+
+    cutBox(topLayer, overlap, size, delta);
+
+    // Overhang
+    const overhangShift = (overlap / 2 + overhangSize / 2) * Math.sign(delta);
+    const overhangX =
+      direction == "x"
+        ? topLayer.threejs.position.x + overhangShift
+        : topLayer.threejs.position.x;
+    const overhangZ =
+      direction == "z"
+        ? topLayer.threejs.position.z + overhangShift
+        : topLayer.threejs.position.z;
+    const overhangWidth = direction == "x" ? overhangSize : topLayer.width;
+    const overhangDepth = direction == "z" ? overhangSize : topLayer.depth;
+
+    addOverhang(overhangX, overhangZ, overhangWidth, overhangDepth);
+
+    // Next layer
+    const nextX = direction == "x" ? topLayer.threejs.position.x : -10;
+    const nextZ = direction == "z" ? topLayer.threejs.position.z : -10;
+    const newWidth = topLayer.width; // New layer has the same size as the cut top layer
+    const newDepth = topLayer.depth; // New layer has the same size as the cut top layer
+    const nextDirection = direction == "x" ? "z" : "x";
+
+    addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
+  }
+
+  prevLayerPosRdm = (
+    ((Math.random() - previousLayer.threejs.position[direction]) * size) /
+    autoplayAccuracy
+  ).toFixed(1);
+}
 
 function cutBox(topLayer, overlap, size, delta) {
   const direction = topLayer.direction;
@@ -211,7 +231,7 @@ function cutBox(topLayer, overlap, size, delta) {
 }
 
 function animation() {
-  const speed = 0.08;
+  const speed = 0.1;
 
   const topLayer = stack[stack.length - 1];
   topLayer.threejs.position[topLayer.direction] += speed;
@@ -222,6 +242,18 @@ function animation() {
   }
   updatePhysics();
   renderer.render(scene, camera);
+
+  const direction = topLayer.direction;
+  if (
+    autoplayOn == true &&
+    // Wierd bug if not <= the block wont be placed bc numers 0.00 and -0.00 is causing a problem and not triggering?
+    prevLayerPosRdm <= topLayer.threejs.position[direction].toFixed(1)
+  ) {
+    clickLogic(true);
+  }
+
+  console.log(topLayer.threejs.position[direction].toFixed(1));
+  console.log(prevLayerPosRdm);
 }
 
 function updatePhysics() {
@@ -233,5 +265,7 @@ function updatePhysics() {
     element.threejs.quaternion.copy(element.cannonjs.quaternion);
   });
 }
+
+function autoplay() {}
 
 init();
