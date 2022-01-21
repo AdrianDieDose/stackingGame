@@ -14,6 +14,7 @@ let world; // CannonJs world
 let autoplayOn = true;
 let prevLayerPosRdm;
 const autoplayAccuracy = 8;
+const speed = 0.04;
 
 function init() {
   // Init CannonJs
@@ -73,6 +74,7 @@ function reset() {
   stack = [];
   overhangs = [];
   world;
+  speed = 0.04;
 
   world = new CANNON.World();
   world.gravity.set(0, -10, 0);
@@ -231,7 +233,7 @@ function cutBox(topLayer, overlap, size, delta) {
 }
 
 function animation() {
-  const speed = 0.06;
+  
 
   const topLayer = stack[stack.length - 1];
   topLayer.threejs.position[topLayer.direction] += speed;
