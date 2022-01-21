@@ -11,6 +11,7 @@ let gameStarted = false;
 const boxHeight = 1; // Height of each layer
 let direction; //Something fishy
 let world; // CannonJs world
+let autoplay = true;
 
 function init() {
   // Init CannonJs
@@ -34,7 +35,7 @@ function init() {
   directionalLight.position.set(10, 20, 0);
   scene.add(directionalLight);
 
-  const width = 10;
+  const width = 12 / (window.innerHeight / window.innerWidth);
   const height = width * (window.innerHeight / window.innerWidth);
   camera = new THREE.OrthographicCamera(
     width / -2, //Left
@@ -53,6 +54,32 @@ function init() {
   renderer.render(scene, camera);
 
   document.body.appendChild(renderer.domElement);
+  renderer.setAnimationLoop(animation);
+}
+
+function reset() {
+  console.log("reset");
+  renderer.setAnimationLoop(null);
+
+  stack = [];
+  overhangs = [];
+  console.log(stack);
+  scene = new THREE.Scene();
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+  scene.add(ambientLight);
+
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+  directionalLight.position.set(10, 20, 0);
+  scene.add(directionalLight);
+  // Foundation
+  addLayer(0, 0, originalBoxSize, originalBoxSize);
+
+  // Adding first layer
+  addLayer(-10, 0, originalBoxSize, originalBoxSize, "x");
+  camera.position.set(8, 8, 8);
+  camera.lookAt(0, 0, 0);
+  renderer.render(scene, camera);
+  renderer.setAnimationLoop(animation);
 }
 
 function addLayer(x, z, width, depth, direction) {
@@ -96,9 +123,14 @@ function generateBox(x, y, z, width, depth, falls) {
   };
 }
 
+function gameLogic() {}
+
 window.addEventListener("click", () => {
+  if (autoplay == true) {
+    reset();
+    autoplay = false;
+  }
   if (!gameStarted) {
-    renderer.setAnimationLoop(animation);
     gameStarted = true;
   } else {
     const topLayer = stack[stack.length - 1];
@@ -119,7 +151,9 @@ window.addEventListener("click", () => {
     if (overlap > 0) {
       //Cut layer
 
-      cutBox(topLayer, overlap, size, delta);
+      if (autoplay == false) {
+        cutBox(topLayer, overlap, size, delta);
+      }
 
       // Overhang
       const overhangShift = (overlap / 2 + overhangSize / 2) * Math.sign(delta);
@@ -134,7 +168,9 @@ window.addEventListener("click", () => {
       const overhangWidth = direction == "x" ? overhangSize : topLayer.width;
       const overhangDepth = direction == "z" ? overhangSize : topLayer.depth;
 
-      addOverhang(overhangX, overhangZ, overhangWidth, overhangDepth);
+      if (autoplay == false) {
+        addOverhang(overhangX, overhangZ, overhangWidth, overhangDepth);
+      }
 
       // Next layer
       const nextX = direction == "x" ? topLayer.threejs.position.x : -10;
@@ -143,7 +179,9 @@ window.addEventListener("click", () => {
       const newDepth = topLayer.depth; // New layer has the same size as the cut top layer
       const nextDirection = direction == "x" ? "z" : "x";
 
-      addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
+      if (autoplay == false) {
+        addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
+      }
     }
   }
 });
@@ -173,7 +211,7 @@ function cutBox(topLayer, overlap, size, delta) {
 }
 
 function animation() {
-  const speed = 0.05;
+  const speed = 0.08;
 
   const topLayer = stack[stack.length - 1];
   topLayer.threejs.position[topLayer.direction] += speed;
