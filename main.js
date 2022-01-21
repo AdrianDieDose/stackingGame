@@ -74,7 +74,6 @@ function reset() {
   stack = [];
   overhangs = [];
   world;
-  speed = 0.04;
 
   world = new CANNON.World();
   world.gravity.set(0, -10, 0);
