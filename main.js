@@ -231,7 +231,7 @@ function cutBox(topLayer, overlap, size, delta) {
 }
 
 function animation() {
-  const speed = 0.08;
+  const speed = 0.06;
 
   const topLayer = stack[stack.length - 1];
   topLayer.threejs.position[topLayer.direction] += speed;
