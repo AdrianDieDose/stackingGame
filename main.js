@@ -267,7 +267,7 @@ function animation() {
   ) {
     clickLogic(true);
   }
-  if(autoplay == true){
+  if(autoplayOn == true){
   rotate();
   }
   //console.log(topLayer.threejs.position[direction].toFixed(1));
