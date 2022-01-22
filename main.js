@@ -267,24 +267,23 @@ function animation() {
   ) {
     clickLogic(true);
   }
-  rotate("right");
+  if(autoplay == true){
+  rotate();
+  }
   //console.log(topLayer.threejs.position[direction].toFixed(1));
   //console.log(prevLayerPosRdm);
 }
 
-function rotate(dir, y) {
+function rotate() {
   let rotSpeed = 0.01;
   var x = camera.position.x,
     y = camera.position.y,
     z = camera.position.z;
 
-  if (dir == "left") {
+  
     camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
     camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
-  } else if (dir == "right") {
-    camera.position.x = x * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
-    camera.position.z = z * Math.cos(rotSpeed) + x * Math.sin(rotSpeed);
-  }
+  
 
   camera.lookAt(0, rotateY, 0);
 }
