@@ -3,6 +3,8 @@ import * as THREE from "three";
 import { Camera } from "three";
 import * as CANNON from "cannon";
 
+// We need buggix: when bot loses and we click : error
+
 let camera, scene, renderer; // ThreeJS globals
 const originalBoxSize = 3; // Originals width and height of a box
 let stack = []; // Height of each layer
@@ -11,12 +13,13 @@ let gameStarted = false;
 const boxHeight = 1; // Height of each layer
 let direction; //Something fishy
 let world; // CannonJs world
-let autoplayOn = true;
-let prevLayerPosRdm;
-const autoplayAccuracy = 8;
+let autoplayOn = true; // Tells if autoplay if active
+let prevLayerPosRdm; // Used to randomize the box autoplay position
+const autoplayAccuracy = 8; // The box range of possible outcomes
 const speed = 0.08;
 const gravity = -10;
 const counter = document.getElementById("counter");
+let rotateY = boxHeight;
 
 function init() {
   // Init CannonJs
@@ -250,6 +253,7 @@ function animation() {
 
   if (camera.position.y < boxHeight * (stack.length - 2) + 4) {
     camera.position.y += speed;
+    rotateY += speed;
   }
   updatePhysics();
   renderer.render(scene, camera);
@@ -262,9 +266,26 @@ function animation() {
   ) {
     clickLogic(true);
   }
-
+  rotate("right");
   //console.log(topLayer.threejs.position[direction].toFixed(1));
   //console.log(prevLayerPosRdm);
+}
+
+function rotate(dir, y) {
+  let rotSpeed = 0.01;
+  var x = camera.position.x,
+    y = camera.position.y,
+    z = camera.position.z;
+
+  if (dir == "left") {
+    camera.position.x = x * Math.cos(rotSpeed) + z * Math.sin(rotSpeed);
+    camera.position.z = z * Math.cos(rotSpeed) - x * Math.sin(rotSpeed);
+  } else if (dir == "right") {
+    camera.position.x = x * Math.cos(rotSpeed) - z * Math.sin(rotSpeed);
+    camera.position.z = z * Math.cos(rotSpeed) + x * Math.sin(rotSpeed);
+  }
+
+  camera.lookAt(0, rotateY, 0);
 }
 
 function updatePhysics() {
