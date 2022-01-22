@@ -16,6 +16,7 @@ let prevLayerPosRdm;
 const autoplayAccuracy = 8;
 const speed = 0.08;
 const gravity = -10;
+const counter = document.getElementById("counter");
 
 function init() {
   // Init CannonJs
@@ -99,6 +100,7 @@ function reset() {
   camera.lookAt(0, 0, 0);
   renderer.render(scene, camera);
   renderer.setAnimationLoop(animation);
+  counter.textContent = 0;
 }
 
 function addLayer(x, z, width, depth, direction) {
@@ -155,6 +157,14 @@ window.addEventListener("click", () => {
   }
 });
 
+window.addEventListener("keypress", (key) => {
+  if (key.key == "r" && gameStarted == true) {
+    reset();
+    autoplayOn = false;
+    gameStarted = true;
+  }
+});
+
 function clickLogic(autoOn) {
   const topLayer = stack[stack.length - 1];
   const previousLayer = stack[stack.length - 2];
@@ -199,6 +209,7 @@ function clickLogic(autoOn) {
     const newDepth = topLayer.depth; // New layer has the same size as the cut top layer
     const nextDirection = direction == "x" ? "z" : "x";
 
+    counter.innerHTML = parseInt(counter.textContent) + 1;
     addLayer(nextX, nextZ, newWidth, newDepth, nextDirection);
   }
 
