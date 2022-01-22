@@ -14,12 +14,13 @@ let world; // CannonJs world
 let autoplayOn = true;
 let prevLayerPosRdm;
 const autoplayAccuracy = 8;
-const speed = 0.04;
+const speed = 0.08;
+const gravity = -10;
 
 function init() {
   // Init CannonJs
   world = new CANNON.World();
-  world.gravity.set(0, -5, 0);
+  world.gravity.set(0, gravity, 0);
   world.broadphase = new CANNON.NaiveBroadphase();
   world.solver.iterations = 40;
 
@@ -76,7 +77,7 @@ function reset() {
   world;
 
   world = new CANNON.World();
-  world.gravity.set(0, -5, 0);
+  world.gravity.set(0, gravity, 0);
   world.broadphase = new CANNON.NaiveBroadphase();
   world.solver.iterations = 40;
 
@@ -232,8 +233,6 @@ function cutBox(topLayer, overlap, size, delta) {
 }
 
 function animation() {
-  
-
   const topLayer = stack[stack.length - 1];
   topLayer.threejs.position[topLayer.direction] += speed;
   topLayer.cannonjs.position[topLayer.direction] += speed;
