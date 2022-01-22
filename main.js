@@ -79,6 +79,7 @@ function reset() {
   stack = [];
   overhangs = [];
   world;
+ rotateY = boxHeight;
 
   world = new CANNON.World();
   world.gravity.set(0, gravity, 0);
