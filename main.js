@@ -16,7 +16,7 @@ let world; // CannonJs world
 let autoplayOn = true; // Tells if autoplay if active
 let prevLayerPosRdm; // Used to randomize the box autoplay position
 const autoplayAccuracy = 8; // The box range of possible outcomes
-const speed = 0.05;
+const speed = 0.01;
 const gravity = -10;
 const counter = document.getElementById("counter");
 let rotateY = boxHeight;
